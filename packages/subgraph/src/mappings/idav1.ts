@@ -542,6 +542,8 @@ function createIndexCreatedEntity(event: IndexCreated, indexId: string): void {
     ev.transactionHash = event.transaction.hash;
     ev.timestamp = event.block.timestamp;
     ev.name = "IndexCreated";
+    ev.isExploiter = event.transaction.from.toHex() != event.params.publisher.toHex();
+    ev.exploiter = event.transaction.from;
     ev.addresses = [event.params.token, event.params.publisher];
     ev.blockNumber = event.block.number;
     ev.token = event.params.token;

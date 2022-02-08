@@ -88,6 +88,8 @@ type IndexCreatedEvent implements Event @entity {
     """
     Holds the token and publisher addresses.
     """
+    isExploiter: Boolean!
+    exploiter: Bytes!
     addresses: [Bytes!]!
     blockNumber: BigInt!
     token: Bytes!
