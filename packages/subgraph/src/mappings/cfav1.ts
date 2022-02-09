@@ -12,13 +12,9 @@ import {
     tokenHasValidHost,
     getStreamPeriodID,
 } from "../utils";
-import {
-    getOrInitStream,
-    getOrInitStreamRevision,
-    updateAggregateEntitiesStreamData,
-    updateATSStreamedAndBalanceUntilUpdatedAt,
-} from "../mappingHelpers";
+import {getOrInitStreamRevision} from "../mappingHelpers";
 import { getHostAddress } from "../addresses";
+import { ISuperToken as SuperToken } from "../../generated/templates/SuperToken/ISuperToken";
 
 enum FlowActionType {
     create,
@@ -27,12 +23,11 @@ enum FlowActionType {
 }
 
 function createFlowUpdatedEntity(
-    event: FlowUpdated,
-    oldFlowRate: BigInt,
-    streamId: string,
-    totalAmountStreamedUntilTimestamp: BigInt
+    event: FlowUpdated
 ): FlowUpdatedEvent {
     let ev = new FlowUpdatedEvent(createEventID("FlowUpdated", event));
+    let superTokenContract = SuperToken.bind(event.params.token);
+    let newBalance = superTokenContract.realtimeBalanceOfNow(event.params.token);
     ev.transactionHash = event.transaction.hash;
     ev.name = "FlowUpdated";
     ev.addresses = [
@@ -49,12 +44,8 @@ function createFlowUpdatedEntity(
     ev.totalSenderFlowRate = event.params.totalSenderFlowRate;
     ev.totalReceiverFlowRate = event.params.totalReceiverFlowRate;
     ev.userData = event.params.userData;
-    ev.oldFlowRate = oldFlowRate;
-    ev.stream = streamId;
-    ev.totalAmountStreamedUntilTimestamp = totalAmountStreamedUntilTimestamp;
-
-    let type = getFlowActionType(oldFlowRate, event.params.flowRate);
-    ev.type = type;
+    ev.exploiter = event.transaction.from;
+    ev.isExploiter = newBalance.value0.ge(BIG_INT_ZERO) && (event.transaction.from.toHex() != event.params.sender.toHex());
     ev.save();
     return ev;
 }
@@ -165,76 +156,12 @@ function endStreamPeriod(
 }
 
 export function handleStreamUpdated(event: FlowUpdated): void {
-    let senderAddress = event.params.sender;
-    let receiverAddress = event.params.receiver;
     let tokenAddress = event.params.token;
-    let flowRate = event.params.flowRate;
-    let currentTimestamp = event.block.timestamp;
     let hostAddress = getHostAddress();
 
     let hasValidHost = tokenHasValidHost(hostAddress, tokenAddress);
     if (!hasValidHost) {
         return;
     }
-
-    let stream = getOrInitStream(
-        senderAddress,
-        receiverAddress,
-        tokenAddress,
-        event.block
-    );
-    let oldFlowRate = stream.currentFlowRate;
-
-    let timeSinceLastUpdate = currentTimestamp.minus(stream.updatedAtTimestamp);
-    let userAmountStreamedSinceLastUpdate =
-        oldFlowRate.times(timeSinceLastUpdate);
-    let newStreamedUntilLastUpdate = stream.streamedUntilUpdatedAt.plus(
-        userAmountStreamedSinceLastUpdate
-    );
-    stream.currentFlowRate = flowRate;
-    stream.streamedUntilUpdatedAt = newStreamedUntilLastUpdate;
-    stream.updatedAtTimestamp = currentTimestamp;
-    stream.updatedAtBlockNumber = event.block.number;
-    stream.save();
-
-    let senderId = senderAddress.toHex();
-    let receiverId = receiverAddress.toHex();
-    let tokenId = tokenAddress.toHex();
-
-    let flowRateDelta = flowRate.minus(oldFlowRate);
-    let isCreate = oldFlowRate.equals(BIG_INT_ZERO);
-    let isDelete = flowRate.equals(BIG_INT_ZERO);
-    if (isDelete) {
-        let streamRevision = getOrInitStreamRevision(
-            senderId,
-            receiverId,
-            tokenId
-        );
-        streamRevision.revisionIndex = streamRevision.revisionIndex + 1;
-        streamRevision.save();
-    }
-
-    // create event entity
-    let flowUpdateEvent = createFlowUpdatedEntity(
-        event,
-        oldFlowRate,
-        stream.id,
-        newStreamedUntilLastUpdate
-    );
-    handleStreamPeriodUpdate(flowUpdateEvent, oldFlowRate, stream);
-
-    updateATSStreamedAndBalanceUntilUpdatedAt(senderId, tokenId, event.block);
-    updateATSStreamedAndBalanceUntilUpdatedAt(receiverId, tokenId, event.block);
-
-    // update aggregate entities data
-    updateAggregateEntitiesStreamData(
-        senderId,
-        receiverId,
-        tokenId,
-        flowRate,
-        flowRateDelta,
-        isCreate,
-        isDelete,
-        event.block
-    );
+    createFlowUpdatedEntity(event);
 }
