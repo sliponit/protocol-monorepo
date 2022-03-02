@@ -581,10 +581,11 @@ contract Superfluid is
         isAgreement(agreementClass)
         returns(bytes memory returnedData)
     {
-        // beaware of the endiness
+        // beware of the endiness
         bytes4 agreementSelector = CallUtils.parseSelector(callData);
 
-        //Build context data
+        // Build context data
+        // FIXME refer below
         bytes memory  ctx = _updateContext(Context({
             appLevel: isApp(ISuperApp(msgSender)) ? 1 : 0,
             callType: ContextDefinitions.CALL_INFO_CALL_TYPE_AGREEMENT,
@@ -629,21 +630,14 @@ contract Superfluid is
         isAppActive(app)
         returns(bytes memory returnedData)
     {
-        //Build context data
-        bytes memory ctx = _updateContext(Context({
-            appLevel: isApp(ISuperApp(msgSender)) ? 1 : 0,
-            callType: ContextDefinitions.CALL_INFO_CALL_TYPE_APP_ACTION,
-            /* solhint-disable-next-line not-rely-on-time */
-            timestamp: block.timestamp,
-            msgSender: msgSender,
-            agreementSelector: 0,
-            userData: "",
-            appAllowanceGranted: 0,
-            appAllowanceWanted: 0,
-            appAllowanceUsed: 0,
-            appAddress: address(app),
-            appAllowanceToken: ISuperfluidToken(address(0))
-        }));
+        Context memory context;
+        context.appLevel = isApp(ISuperApp(msgSender)) ? 1 : 0;
+        /* solhint-disable-next-line not-rely-on-time */
+        context.timestamp = block.timestamp;
+        context.appAddress = address(app);
+        context.callType = ContextDefinitions.CALL_INFO_CALL_TYPE_APP_ACTION;
+        // Build context data
+        bytes memory ctx = _updateContext(context);
         bool success;
         (success, returnedData) = _callExternalWithReplacedCtx(address(app), callData, ctx);
         if (success) {
@@ -688,7 +682,6 @@ contract Superfluid is
 
         address oldSender = context.msgSender;
         context.msgSender = msg.sender;
-        //context.agreementSelector =;
         context.userData = userData;
         newCtx = _updateContext(context);
 

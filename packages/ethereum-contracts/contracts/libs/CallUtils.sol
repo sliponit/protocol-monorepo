@@ -13,6 +13,8 @@ library CallUtils {
     /// @return Revert message string
     function getRevertMsg(bytes memory res) internal pure returns (string memory) {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
+        // https://ethereum.stackexchange.com/questions/83528/
+        // FIXME custom error support in 0.8
         if (res.length < 68) return "CallUtils: target reverted";
         // solhint-disable-next-line no-inline-assembly
         assembly {
