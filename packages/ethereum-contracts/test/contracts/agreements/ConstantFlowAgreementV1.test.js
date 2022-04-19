@@ -1408,7 +1408,7 @@ describe("Using ConstantFlowAgreement v1", function () {
                 );
             });
 
-            it("#1.4.17 Patrician period updates when user is not solvent" , async () => {
+            it("#1.4.17 Patrician period updates when user is not solvent", async () => {
                 shouldCreateSolventLiquidationTest({
                     titlePrefix: "#1.4.10",
                     superToken,
@@ -1418,22 +1418,29 @@ describe("Using ConstantFlowAgreement v1", function () {
                     seconds: t.configs.PATRICIAN_PERIOD + 1,
                 });
 
-                let period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+                let period = await t.contracts.cfa.isPatricianPeriodNow(
+                    superToken.address,
+                    t.aliases[sender]
+                );
 
-                assert.isTrue(period[0])
+                assert.isTrue(period[0]);
 
-                period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+                period = await t.contracts.cfa.isPatricianPeriodNow(
+                    superToken.address,
+                    t.aliases[sender]
+                );
 
                 await timeTravelOnce(
                     t.configs.INIT_BALANCE.div(FLOW_RATE1).toNumber()
                 );
 
-                period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+                period = await t.contracts.cfa.isPatricianPeriodNow(
+                    superToken.address,
+                    t.aliases[sender]
+                );
 
-                assert.isFalse(period[0])
-
-            })
-
+                assert.isFalse(period[0]);
+            });
         });
 
         describe("#1.5 multiple flow liquidations", () => {
@@ -3320,13 +3327,18 @@ describe("Using ConstantFlowAgreement v1", function () {
             );
         });
 
-        it.only("#2.20 that one branch", async () => {
+        it("#2.20 that one branch", async () => {
             const {superToken: superToken2} = await t.deployNewToken("TEST2", {
                 doUpgrade: true,
                 isTruffle: true,
-            })
+            });
             await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
-            await t.transferBalance("alice", "app", t.configs.INIT_BALANCE , "TEST2");
+            await t.transferBalance(
+                "alice",
+                "app",
+                t.configs.INIT_BALANCE,
+                "TEST2"
+            );
 
             const mfa = {
                 ratioPct: 100,
@@ -3351,10 +3363,10 @@ describe("Using ConstantFlowAgreement v1", function () {
                         "0x"
                     )
                     .encodeABI()
-            )
+            );
 
-            console.log("TOOOOKEEEN",superToken2.address)
-            console.log("TOOOOKEEEN2",superToken.address)
+            console.log("TOOOOKEEEN", superToken2.address);
+            console.log("TOOOOKEEEN2", superToken.address);
 
             //await t.transferBalance(sender, "mfa", toWad(10) , "TEST2");
 
