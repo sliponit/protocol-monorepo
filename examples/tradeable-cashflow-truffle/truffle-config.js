@@ -10,6 +10,8 @@ module.exports = {
             port: process.env.GANACHE_PORT || 8545,
         },
 
+
+
         goerli: {
             provider: () =>
                 new HDWalletProvider(
@@ -24,6 +26,9 @@ module.exports = {
             skipDryRun: false // Skip dry run before migrations? (default: false for public nets )
         }
     },
+    plugins: [
+        "solidity-coverage",
+    ],
     compilers: {
         solc: {
             version: "0.8.13" // Fetch exact version from solc-bin (default: truffle's version)

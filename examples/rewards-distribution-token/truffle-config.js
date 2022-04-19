@@ -32,7 +32,7 @@ const GAS_LIMIT = 8e6;
 module.exports = {
     plugins: [
         //"truffle-security",
-        //"solidity-coverage",
+        "solidity-coverage",
         "truffle-plugin-verify",
     ],
 
@@ -104,7 +104,7 @@ module.exports = {
         skipDryRun: false // Skip dry run before migrations? (default: false for public nets )
     },
 
-    
+
 
   },
 
@@ -112,6 +112,14 @@ module.exports = {
   mocha: {
     // timeout: 100000
   },
+
+    coverage: {
+        host: "127.0.0.1",
+        port: 8555, // <-- If you change this, also set the port option in .solcover.js.
+
+        // ditto
+        disableConfirmationListener: true,
+    },
 
   // Configure your compilers
   compilers: {

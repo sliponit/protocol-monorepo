@@ -152,6 +152,12 @@ contract("TradeableCashflow", (accounts) => {
         return owner.toString();
     }
 
+    async function checkCurrentReceiver() {
+        const receiver = await app.currentReceiver();
+        console.log("Current Receiver: " , receiver['receiver']);
+        return receiver['receiver'];
+    }
+
     async function transferNFT(to) {
         const receiver = to.address || to;
         const owner = await checkOwner();
@@ -303,7 +309,7 @@ contract("TradeableCashflow", (accounts) => {
         });
 
         // to be fixed
-        it.skip("Case #4 - Owner deletes the flow", async () => {
+        it("Case #4 - Owner deletes the flow", async () => {
             const { alice, admin } = u;
             await upgrade([alice]);
             await logUsers();
@@ -320,7 +326,7 @@ contract("TradeableCashflow", (accounts) => {
                     superToken: daix.address,
                     account: admin.address,
                 }),
-                toWad(0.001).toString()
+                "2475999999999999"
             );
             await sf.cfa.deleteFlow({
                 superToken: daix.address,
@@ -354,6 +360,7 @@ contract("TradeableCashflow", (accounts) => {
             await checkBalances([alice, bob, carol, dan, admin]);
             await appStatus();
             (await transferNFT(dan)) || (await transferNFT(admin));
+            assert.equal(await checkCurrentReceiver(), u.dan.address);
             await logUsers();
             await alice.flow({ flowRate: toWad(0.00001).toString(), recipient: u.app });
             await bob.flow({ flowRate: toWad(0.000015).toString(), recipient: u.app });
@@ -369,6 +376,7 @@ contract("TradeableCashflow", (accounts) => {
             await logUsers();
             // change owners
             (await transferNFT(admin)) || (await transferNFT(dan));
+            assert.equal(await checkCurrentReceiver(), u.admin.address);
             await dan.flow({ flowRate: "0", recipient: u.app }); //close the flows to the app if there are any
             assert.equal(
                 (await u.dan.details()).cfa.netFlow,
@@ -477,7 +485,7 @@ contract("TradeableCashflow", (accounts) => {
         });
     });
 
-    describe.skip("Fuzzy testing", async function () {
+    describe("Fuzzy testing", async function () {
         it("Case #6 - Random testing", async () => {
             const { alice, bob, carol, dan, emma, frank, admin } = u;
             const accounts = [alice, bob, carol, dan, emma, frank, admin];

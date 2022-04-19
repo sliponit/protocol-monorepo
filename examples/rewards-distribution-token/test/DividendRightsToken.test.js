@@ -5,6 +5,8 @@ const deployTestToken = require("@superfluid-finance/ethereum-contracts/scripts/
 const deploySuperToken = require("@superfluid-finance/ethereum-contracts/scripts/deploy-super-token");
 const SuperfluidSDK = require("@superfluid-finance/js-sdk");
 const DividendRightsToken = artifacts.require("DividendRightsToken");
+const {expectRevert} = require("../utils/expectRevert");
+
 
 contract("DividendRightsToken", accounts => {
     const errorHandler = err => {
@@ -191,4 +193,12 @@ contract("DividendRightsToken", accounts => {
             toWad("3").toString()
         );
     });
+
+    it("Getting the decimal amount of tokens" , async () => {
+        assert.equal((await app.decimals.call()).toString(), "0");
+    })
+
+    //TODO Mock the agreement and test the errors in the callbacks
+    it("Checking the ")
 });
+
