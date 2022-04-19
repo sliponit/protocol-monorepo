@@ -1407,6 +1407,33 @@ describe("Using ConstantFlowAgreement v1", function () {
                     {rewardAccount: t.aliases[agent]}
                 );
             });
+
+            it("#1.4.17 Patrician period updates when user is not solvent" , async () => {
+                shouldCreateSolventLiquidationTest({
+                    titlePrefix: "#1.4.10",
+                    superToken,
+                    sender,
+                    receiver,
+                    by: agent,
+                    seconds: t.configs.PATRICIAN_PERIOD + 1,
+                });
+
+                let period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+
+                assert.isTrue(period[0])
+
+                period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+
+                await timeTravelOnce(
+                    t.configs.INIT_BALANCE.div(FLOW_RATE1).toNumber()
+                );
+
+                period = await t.contracts.cfa.isPatricianPeriodNow(superToken.address,t.aliases[sender])
+
+                assert.isFalse(period[0])
+
+            })
+
         });
 
         describe("#1.5 multiple flow liquidations", () => {
@@ -3291,6 +3318,64 @@ describe("Using ConstantFlowAgreement v1", function () {
                 }),
                 "CFA: APP_RULE_NO_CRITICAL_RECEIVER_ACCOUNT"
             );
+        });
+
+        it.only("#2.20 that one branch", async () => {
+            const {superToken: superToken2} = await t.deployNewToken("TEST2", {
+                doUpgrade: true,
+                isTruffle: true,
+            })
+            await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
+            await t.transferBalance("alice", "app", t.configs.INIT_BALANCE , "TEST2");
+
+            const mfa = {
+                ratioPct: 100,
+                sender,
+                receivers: {
+                    [receiver1]: {
+                        proportion: 1,
+                    },
+                    [receiver2]: {
+                        proportion: 1,
+                    },
+                },
+            };
+
+            await t.sf.host.callAppAction(
+                app.address,
+                app.contract.methods
+                    .createFlow(
+                        superToken2.address,
+                        bob,
+                        FLOW_RATE1.toString(),
+                        "0x"
+                    )
+                    .encodeABI()
+            )
+
+            console.log("TOOOOKEEEN",superToken2.address)
+            console.log("TOOOOKEEEN2",superToken.address)
+
+            //await t.transferBalance(sender, "mfa", toWad(10) , "TEST2");
+
+            await t.validateSystemInvariance();
+            await shouldCreateFlow({
+                testenv: t,
+                superToken,
+                sender,
+                receiver: "mfa",
+                mfa,
+                flowRate: FLOW_RATE1,
+            });
+
+            // await shouldCreateFlow({
+            //     testenv: t,
+            //     superToken2,
+            //     sender,
+            //     receiver: "mfa",
+            //     mfa,
+            //     flowRate: FLOW_RATE1,
+            // });
         });
     });
 
