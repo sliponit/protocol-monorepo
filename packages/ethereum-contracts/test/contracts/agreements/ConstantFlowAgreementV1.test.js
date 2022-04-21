@@ -3340,67 +3340,38 @@ describe("Using ConstantFlowAgreement v1", function () {
             );
         });
 
-        it("#2.20 that one branch", async () => {
+        it.only("#2.20 that one branch", async () => {
+            const DifferentTokenFlowApp = artifacts.require(
+                "DifferentTokenFlowApp"
+            );
+
+            app = await web3tx(
+                DifferentTokenFlowApp.new,
+                "DifferentTokenFlowApp.new"
+            )(cfa.address, superfluid.address);
+            t.addAlias("dfa", app.address);
+
             const {superToken: superToken2} = await t.deployNewToken("TEST2", {
                 doUpgrade: true,
                 isTruffle: true,
             });
+
             await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
-            await t.transferBalance(
-                "alice",
-                "app",
-                t.configs.INIT_BALANCE,
-                "TEST2"
-            );
 
-            const mfa = {
-                ratioPct: 100,
-                sender,
-                receivers: {
-                    [receiver1]: {
-                        proportion: 1,
-                    },
-                    [receiver2]: {
-                        proportion: 1,
-                    },
-                },
-            };
-
-            await t.sf.host.callAppAction(
-                app.address,
-                app.contract.methods
-                    .createFlow(
-                        superToken2.address,
-                        bob,
-                        FLOW_RATE1.toString(),
-                        "0x"
-                    )
-                    .encodeABI()
-            );
-
-            console.log("TOOOOKEEEN", superToken2.address);
-            console.log("TOOOOKEEEN2", superToken.address);
-
-            //await t.transferBalance(sender, "mfa", toWad(10) , "TEST2");
-
-            await t.validateSystemInvariance();
+            //Create a flow with token 1 to DFA
             await shouldCreateFlow({
                 testenv: t,
                 superToken,
                 sender,
-                receiver: "mfa",
-                mfa,
+                receiver: "dfa",
                 flowRate: FLOW_RATE1,
             });
 
-            // await shouldCreateFlow({
-            //     testenv: t,
-            //     superToken2,
-            //     sender,
-            //     receiver: "mfa",
-            //     mfa,
-            //     flowRate: FLOW_RATE1,
-            // });
+            //DFA should start a stream back with token 2
+            assert.equal(
+                await cfa.getNetFlow(superToken2.address, t.getAddress(sender)),
+                FLOW_RATE1
+            );
         });
     });
 
