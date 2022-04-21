@@ -29,12 +29,14 @@ contract DifferentTokenFlowApp is SuperAppBase {
 
     IConstantFlowAgreementV1 private _cfa;
     ISuperfluid private _host;
+    Configuration private _configuration;
 
-    constructor(IConstantFlowAgreementV1 cfa, ISuperfluid superfluid) {
+    constructor(IConstantFlowAgreementV1 cfa, ISuperfluid superfluid , ISuperToken outgoingToken) public {
         assert(address(cfa) != address(0));
         assert(address(superfluid) != address(0));
         _cfa = cfa;
         _host = superfluid;
+        _configuration.outgoingToken = outgoingToken;
 
         uint256 configWord =
         SuperAppDefinitions.APP_LEVEL_FINAL |
@@ -127,8 +129,6 @@ contract DifferentTokenFlowApp is SuperAppBase {
 
     struct StackVars {
         ISuperfluid.Context context;
-        address dfaSender;
-        Configuration configuration;
         address flowSender;
     }
 
@@ -149,22 +149,22 @@ contract DifferentTokenFlowApp is SuperAppBase {
 
         vars.context = _host.decodeCtx(ctx);
         // parse user data
-        (vars.dfaSender) = _parseUserData(vars.context.userData);
+        (vars.flowSender) = _parseUserData(vars.context.userData);
         // validate the context
         {
             (vars.flowSender) = abi.decode(agreementData, (address));
             assert(vars.flowSender == vars.context.msgSender);
-            assert(vars.context.appAllowanceGranted > 0);
+            //assert(vars.context.appAllowanceGranted > 0);
         }
         int96 flowRate;
         (,flowRate,,) = _cfa.getFlowByID(superToken, agreementId);
-        newCtx = _updateDifferentFlow(
-            vars.configuration,
-            superToken,
-            _cfa.createFlow.selector,
-            flowRate,
-            vars.context.appAllowanceGranted,
-            ctx);
+//        newCtx = _updateDifferentFlow(
+//            _configuration,
+//            superToken,
+//            _cfa.createFlow.selector,
+//            flowRate,
+//            vars.context.appAllowanceGranted,
+//            ctx);
     }
 
 

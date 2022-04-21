@@ -3340,23 +3340,32 @@ describe("Using ConstantFlowAgreement v1", function () {
             );
         });
 
-        it.only("#2.20 that one branch", async () => {
+        it("#2.20 that one branch", async () => {
             const DifferentTokenFlowApp = artifacts.require(
                 "DifferentTokenFlowApp"
             );
 
-            app = await web3tx(
-                DifferentTokenFlowApp.new,
-                "DifferentTokenFlowApp.new"
-            )(cfa.address, superfluid.address);
-            t.addAlias("dfa", app.address);
-
-            const {superToken: superToken2} = await t.deployNewToken("TEST2", {
+            let {superToken: superToken2} = await t.deployNewToken("TEST2", {
                 doUpgrade: true,
                 isTruffle: true,
             });
 
+            app = await web3tx(
+                DifferentTokenFlowApp.new,
+                "DifferentTokenFlowApp.new"
+            )(cfa.address, superfluid.address , superToken2.address);
+            t.addAlias("dfa", app.address);
+
             await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
+
+            //fund the app with token 2
+            await superToken2.transfer(app.address, t.configs.INIT_BALANCE, {
+                from: alice,
+            });
+
+            let appBalance = await superToken2.realtimeBalanceOfNow(app.address)
+            console.log("BALANCEE",appBalance['availableBalance'].toString())
+
 
             //Create a flow with token 1 to DFA
             await shouldCreateFlow({
@@ -3366,6 +3375,7 @@ describe("Using ConstantFlowAgreement v1", function () {
                 receiver: "dfa",
                 flowRate: FLOW_RATE1,
             });
+
 
             //DFA should start a stream back with token 2
             assert.equal(
