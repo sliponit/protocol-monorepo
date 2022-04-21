@@ -3340,7 +3340,7 @@ describe("Using ConstantFlowAgreement v1", function () {
             );
         });
 
-        it("#2.20 that one branch", async () => {
+        it("#2.22 dtfa-1to1_mirror_flow_with_different_token", async () => {
             const DifferentTokenFlowApp = artifacts.require(
                 "DifferentTokenFlowApp"
             );
@@ -3353,34 +3353,39 @@ describe("Using ConstantFlowAgreement v1", function () {
             app = await web3tx(
                 DifferentTokenFlowApp.new,
                 "DifferentTokenFlowApp.new"
-            )(cfa.address, superfluid.address , superToken2.address);
-            t.addAlias("dfa", app.address);
+            )(cfa.address, superfluid.address, superToken2.address);
+            t.addAlias("dtfa", app.address);
 
             await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
 
-            //fund the app with token 2
+            // fund the app with token 2
             await superToken2.transfer(app.address, t.configs.INIT_BALANCE, {
                 from: alice,
             });
 
-            let appBalance = await superToken2.realtimeBalanceOfNow(app.address)
-            console.log("BALANCEE",appBalance['availableBalance'].toString())
+            const appBalance = await superToken2.realtimeBalanceOfNow(
+                app.address
+            );
+            console.log("BALANCEE", appBalance["availableBalance"].toString());
 
-
-            //Create a flow with token 1 to DFA
+            //Create a flow with token 1 to DTFA
             await shouldCreateFlow({
                 testenv: t,
                 superToken,
                 sender,
-                receiver: "dfa",
+                receiver: "dtfa",
                 flowRate: FLOW_RATE1,
             });
 
-
-            //DFA should start a stream back with token 2
+            // DTFA should start a stream back with token 2
             assert.equal(
-                await cfa.getNetFlow(superToken2.address, t.getAddress(sender)),
-                FLOW_RATE1
+                (
+                    await cfa.getNetFlow(
+                        superToken2.address,
+                        t.getAddress(sender)
+                    )
+                ).toString(),
+                FLOW_RATE1.toString()
             );
         });
     });
