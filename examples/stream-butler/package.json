@@ -1,0 +1,25 @@
+{
+  "name": "stream-butler",
+  "version": "0.0.1",
+  "description": "A personal stream butler that can help you open, update and close streams.",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "forge test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superfluid-finance/protocol-monorepo/examples.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/superfluid-finance/protocol-monorepo/issues"
+  },
+  "homepage": "https://github.com/superfluid-finance/protocol-monorepo/#readme",
+  "devDependencies": {
+    "@superfluid-finance/ethereum-contracts": "^1.1.1",
+    "hardhat": "^2.9.3"
+  }
+}
