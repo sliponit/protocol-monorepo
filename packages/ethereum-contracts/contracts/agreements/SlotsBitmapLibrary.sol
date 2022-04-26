@@ -54,6 +54,7 @@ library SlotsBitmapLibrary {
                 break;
             }
         }
+        require(slotId < _MAX_NUM_SLOTS, "Out of slots bitmap slots");
     }
 
     function clearSlot(

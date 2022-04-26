@@ -812,6 +812,52 @@ describe("Using InstantDistributionAgreement v1", function () {
                     "IDA: E_NO_INDEX"
                 );
             });
+
+            it("#1.2.15 publisher should be able to delete an approved subscription", async () => {
+                await t.upgradeBalance("alice", INIT_BALANCE);
+
+                //sub_id = type(uint32).max
+                await shouldCreateIndex({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: DEFAULT_INDEX_ID,
+                });
+
+                await shouldUpdateSubscription({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: DEFAULT_INDEX_ID,
+                    subscriberName: "bob",
+                    units: toWad("0.001").toString(),
+                });
+
+                await shouldDistribute({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: DEFAULT_INDEX_ID,
+                    indexValue: "500",
+                });
+
+                await shouldApproveSubscription({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: DEFAULT_INDEX_ID,
+                    subscriberName: "bob",
+                });
+
+                await shouldDeleteSubscription({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: DEFAULT_INDEX_ID,
+                    subscriberName: "bob",
+                    senderName: "alice",
+                });
+            });
         });
 
         describe("#1.3 distribution workflows", () => {
@@ -1994,6 +2040,75 @@ describe("Using InstantDistributionAgreement v1", function () {
                 "unauthorized host"
             );
         });
+
+        //Took about 30 mins for my laptop to run this test, so skipping it to reduce CI workflow execution time
+        it.only("#4.2 Max number of subscriptions a subscriber can have" , async () => {
+            const maxNumberOfSubs = 256;
+            //loop 256 times to create 256 subscriptions
+            for (let i = 0; i <= maxNumberOfSubs; i++) {
+                await shouldCreateIndex({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: i,
+                });
+
+                await shouldUpdateSubscription({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: i,
+                    subscriberName: "bob",
+                    units: toWad(0.01).toString(),
+                });
+
+                await shouldApproveSubscription({
+                    testenv: t,
+                    superToken,
+                    publisherName: "alice",
+                    indexId: i,
+                    subscriberName: "bob",
+                });
+            }
+
+            const subs = await t.sf.ida.listSubscriptions({
+                superToken: superToken.address,
+                subscriber: bob,
+            });
+                assert.equal(subs.length, maxNumberOfSubs);
+
+            await shouldCreateIndex({
+                testenv: t,
+                superToken,
+                publisherName: "alice",
+                indexId: maxNumberOfSubs + 1,
+            });
+
+            await shouldUpdateSubscription({
+                testenv: t,
+                superToken,
+                publisherName: "alice",
+                indexId: maxNumberOfSubs + 1,
+                subscriberName: "bob",
+                units: toWad(0.01).toString(),
+            });
+
+            await shouldApproveSubscription({
+                testenv: t,
+                superToken,
+                publisherName: "alice",
+                indexId: maxNumberOfSubs + 1,
+                subscriberName: "bob",
+            });
+
+            const subs2 = await t.sf.ida.listSubscriptions({
+                superToken: superToken.address,
+                subscriber: bob,
+            });
+
+            assert.equal(subs2.length, maxNumberOfSubs + 1);
+        }).timeout(6000000)
+
     });
 
     context("#10 scenarios", async () => {

@@ -3363,11 +3363,6 @@ describe("Using ConstantFlowAgreement v1", function () {
                 from: alice,
             });
 
-            const appBalance = await superToken2.realtimeBalanceOfNow(
-                app.address
-            );
-            console.log("BALANCEE", appBalance["availableBalance"].toString());
-
             //Create a flow with token 1 to DTFA
             await shouldCreateFlow({
                 testenv: t,
