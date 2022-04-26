@@ -3339,50 +3339,7 @@ describe("Using ConstantFlowAgreement v1", function () {
                 "CFA: APP_RULE_NO_CRITICAL_RECEIVER_ACCOUNT"
             );
         });
-
-        it("#2.22 dtfa-1to1_mirror_flow_with_different_token", async () => {
-            const DifferentTokenFlowApp = artifacts.require(
-                "DifferentTokenFlowApp"
-            );
-
-            let {superToken: superToken2} = await t.deployNewToken("TEST2", {
-                doUpgrade: true,
-                isTruffle: true,
-            });
-
-            app = await web3tx(
-                DifferentTokenFlowApp.new,
-                "DifferentTokenFlowApp.new"
-            )(cfa.address, superfluid.address, superToken2.address);
-            t.addAlias("dtfa", app.address);
-
-            await t.upgradeBalance(sender, t.configs.INIT_BALANCE);
-
-            // fund the app with token 2
-            await superToken2.transfer(app.address, t.configs.INIT_BALANCE, {
-                from: alice,
-            });
-
-            //Create a flow with token 1 to DTFA
-            await shouldCreateFlow({
-                testenv: t,
-                superToken,
-                sender,
-                receiver: "dtfa",
-                flowRate: FLOW_RATE1,
-            });
-
-            // DTFA should start a stream back with token 2
-            assert.equal(
-                (
-                    await cfa.getNetFlow(
-                        superToken2.address,
-                        t.getAddress(sender)
-                    )
-                ).toString(),
-                FLOW_RATE1.toString()
-            );
-        });
+        
     });
 
     context("#3 callbacks", () => {
