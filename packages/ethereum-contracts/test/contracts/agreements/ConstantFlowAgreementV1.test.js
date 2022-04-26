@@ -3339,7 +3339,6 @@ describe("Using ConstantFlowAgreement v1", function () {
                 "CFA: APP_RULE_NO_CRITICAL_RECEIVER_ACCOUNT"
             );
         });
-        
     });
 
     context("#3 callbacks", () => {

@@ -859,7 +859,7 @@ describe("Using InstantDistributionAgreement v1", function () {
                 });
             });
 
-            it("#1.2.16 Max number of subscriptions a subscriber can have" , async () => {
+            it("#1.2.16 Max number of subscriptions a subscriber can have", async () => {
                 const maxNumberOfSubs = 256;
 
                 for (let i = 0; i < maxNumberOfSubs; i++) {
@@ -867,7 +867,8 @@ describe("Using InstantDistributionAgreement v1", function () {
                     await t.sf.ida.createIndex({
                         superToken: superToken.address,
                         publisher: t.getAddress("alice"),
-                        indexId: i,});
+                        indexId: i,
+                    });
 
                     await t.sf.ida.updateSubscription({
                         superToken: superToken.address,
@@ -889,20 +890,21 @@ describe("Using InstantDistributionAgreement v1", function () {
                     superToken: superToken.address,
                     subscriber: bob,
                 });
+
                 assert.equal(subs.length, maxNumberOfSubs);
 
                 await shouldCreateIndex({
                     testenv: t,
                     superToken,
                     publisherName: "alice",
-                    indexId: maxNumberOfSubs + 1,
+                    indexId: maxNumberOfSubs,
                 });
 
                 await shouldUpdateSubscription({
                     testenv: t,
                     superToken,
                     publisherName: "alice",
-                    indexId: maxNumberOfSubs + 1,
+                    indexId: maxNumberOfSubs,
                     subscriberName: "bob",
                     units: toWad(0.01).toString(),
                 });
@@ -912,11 +914,12 @@ describe("Using InstantDistributionAgreement v1", function () {
                         testenv: t,
                         superToken,
                         publisherName: "alice",
-                        indexId: maxNumberOfSubs + 1,
+                        indexId: maxNumberOfSubs,
                         subscriberName: "bob",
-                    }), "Out of bitmap slot"
-                )
-            })
+                    }),
+                    "Out of bitmap slots"
+                );
+            });
         });
 
         describe("#1.3 distribution workflows", () => {
@@ -2099,7 +2102,6 @@ describe("Using InstantDistributionAgreement v1", function () {
                 "unauthorized host"
             );
         });
-
     });
 
     context("#10 scenarios", async () => {
