@@ -1,10 +1,11 @@
 import {HardhatUserConfig, subtask} from "hardhat/config";
+import {TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS} from "hardhat/builtin-tasks/task-names";
+import {config as dotenvConfig} from "dotenv";
 import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-truffle5";
-import {TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS} from "hardhat/builtin-tasks/task-names"
 import "solidity-coverage";
-import {config as dotenvConfig} from "dotenv";
+import "@primitivefi/hardhat-dodoc";
 
 try {
     dotenvConfig();
@@ -16,10 +17,12 @@ try {
 
 // hardhat mixin magic: https://github.com/NomicFoundation/hardhat/issues/2306#issuecomment-1039452928
 // filter out foundry test codes
-subtask(TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS).setAction(async (_, __, runSuper) => {
-    const paths = await runSuper();
-    return paths.filter((p: string) => !p.includes("test/foundry"));
-});
+subtask(TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS).setAction(
+    async (_, __, runSuper) => {
+        const paths = await runSuper();
+        return paths.filter((p: string) => !p.includes("test/foundry"));
+    }
+);
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -70,6 +73,9 @@ const config: HardhatUserConfig = {
     },
     mocha: {
         timeout: 250000,
+    },
+    dodoc: {
+        outputDir: "./generated-docs",
     },
 };
 
