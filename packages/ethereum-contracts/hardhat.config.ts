@@ -1,7 +1,9 @@
 import {HardhatUserConfig, subtask} from "hardhat/config";
+import "@typechain/hardhat";
 import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-truffle5";
+import "@nomiclabs/hardhat-ethers";
 import {TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS} from "hardhat/builtin-tasks/task-names"
 import "solidity-coverage";
 import {config as dotenvConfig} from "dotenv";
