@@ -5,6 +5,7 @@ const { ethers, web3, network } = require("hardhat");
 const daiABI = require("./abis/fDAIABI");
 const LoanArtifact = require("../artifacts/contracts/EmploymentLoan.sol/EmploymentLoan.json");
 const LoanABI = LoanArtifact.abi;
+require('dotenv').config()
 
 const deployFramework = require("@superfluid-finance/ethereum-contracts/scripts/deploy-framework");
 const deployTestToken = require("@superfluid-finance/ethereum-contracts/scripts/deploy-test-token");
@@ -36,11 +37,15 @@ before(async function () {
     //get accounts from hardhat
     accounts = await ethers.getSigners();
 
+    console.log('deploying', accounts.map(acc => acc.address), process.env.RESOLVER_ADDRESS)
+
     //deploy the framework
     await deployFramework(errorHandler, {
         web3,
         from: accounts[0].address,
     });
+
+    console.log('deployFramework done?')
 
     //deploy a fake erc20 token for borrow token
     let fDAIAddress = await deployTestToken(errorHandler, [":", "fDAI"], {
@@ -67,7 +72,7 @@ before(async function () {
 
     //initialize the superfluid framework...put custom and web3 only bc we are using hardhat locally
     sf = await Framework.create({
-        networkName: "custom",
+        networkName: "mumbai",
         provider,
         dataMode: "WEB3_ONLY",
         resolverAddress: process.env.RESOLVER_ADDRESS, //this is how you get the resolver address

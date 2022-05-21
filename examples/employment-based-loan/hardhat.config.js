@@ -28,6 +28,17 @@ module.exports = {
       runs: 10
     }
   },
+  networks: {
+    mumbai: {
+      url: `${process.env.MUMBAI_URL}`,
+      accounts: [
+        `0x${process.env.PRIVATE_KEY}`,
+        `0x${process.env.PRIVATE_KEY_2}`,
+        `0x${process.env.PRIVATE_KEY_3}`,
+        `0x${process.env.PRIVATE_KEY_4}`,
+      ],
+    }
+  }
 
   // networks: {
   //   polygon: {
